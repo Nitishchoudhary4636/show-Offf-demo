@@ -412,10 +412,6 @@
         qty++; qtyNum.textContent = qty;
       });
 
-      if (window.showoffAnalytics && typeof window.showoffAnalytics.trackViewItem === 'function') {
-        window.showoffAnalytics.trackViewItem(product);
-      }
-
       // Add to Bag Button
       const btnAddBag = document.getElementById('btn-pdp-add-bag');
       if (btnAddBag) {

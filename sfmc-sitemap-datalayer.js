@@ -627,36 +627,50 @@
   };
 
   // =========================================================================
-  // INITIAL PAGE VIEW EXECUTION
+  // INITIAL PAGE VIEW EXECUTION (SINGLE CONSOLIDATED PUSH)
   // =========================================================================
 
-  // Push immediate page_view so dataLayer has baseline context instantly
-  pushMcpState("page_view");
+  function initPageView() {
+    var baseMcp = buildBaseMcp();
+    var extraEcommerce = null;
 
-  // On DOM ready, re-check if product or catalog DOM elements enriched the page context
-  function onDomReady() {
-    var fileName = getFileName();
-    var pageType = detectPageTypeFromDom(fileName);
-
-    if (pageType === "Product") {
-      var prod = getCurrentPdpProduct();
-      if (prod) {
-        trackViewItem(prod);
-      }
-    } else if (pageType === "Category") {
-      var cat = getCategoryFromPage();
-      var pool = getAllProducts().filter(function (p) {
+    if (baseMcp.pageType === "Product" && baseMcp.Item) {
+      extraEcommerce = {
+        currency: baseMcp.currency || "INR",
+        value: baseMcp.Item.price || 0,
+        items: [{
+          item_id: baseMcp.Item.id,
+          item_name: baseMcp.Item.name,
+          item_category: baseMcp.Item.category,
+          price: baseMcp.Item.price
+        }]
+      };
+    } else if (baseMcp.pageType === "Category") {
+      var cat = baseMcp.itemListId;
+      var catProducts = getAllProducts().filter(function (p) {
         return (p.gender === cat) || (p.category === cat);
-      });
-      trackViewItemList(cat, pool);
+      }).slice(0, 12);
+
+      extraEcommerce = {
+        item_list_id: cat,
+        item_list_name: baseMcp.itemListName,
+        items: catProducts.map(function (p, idx) {
+          return {
+            item_id: p.id,
+            item_name: p.title,
+            item_category: p.category || cat,
+            price: parsePrice(p.saleNum || p.salePrice),
+            index: idx + 1
+          };
+        })
+      };
     }
+
+    pushMcpState("page_view", null, extraEcommerce);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", onDomReady);
-  } else {
-    onDomReady();
-  }
+  // Execute single consolidated push on page load
+  initPageView();
 
   console.log("SHOWOFFFF DataLayer initialized successfully. Current state:", window.dataLayer);
 })();
