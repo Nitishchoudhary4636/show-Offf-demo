@@ -621,6 +621,9 @@
     }
 
     saveCart();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
+      window.showoffAnalytics.trackAddToCart(product, quantity, size);
+    }
     showToast(`Added "${product.title}" (${size}) to Bag! 🛍️`, 'success');
     openCartDrawer();
   }
@@ -634,11 +637,17 @@
       STATE.cart.splice(itemIndex, 1);
     }
     saveCart();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+      window.showoffAnalytics.syncCartFromStorage();
+    }
   }
 
   function removeCartItem(cartItemId) {
     STATE.cart = STATE.cart.filter(i => i.cartItemId !== cartItemId);
     saveCart();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+      window.showoffAnalytics.syncCartFromStorage();
+    }
     showToast('Item removed from cart');
   }
 
@@ -1183,6 +1192,9 @@
     updateCartUI();
     updateWishlistUI();
     initEventListeners();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+      window.showoffAnalytics.syncCartFromStorage();
+    }
   }
 
   if (document.readyState === 'loading') {
