@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -412,18 +412,20 @@
         qty++; qtyNum.textContent = qty;
       });
 
+      if (window.showoffAnalytics && typeof window.showoffAnalytics.trackViewItem === 'function') {
+        window.showoffAnalytics.trackViewItem(product);
+      }
+
       // Add to Bag Button
       const btnAddBag = document.getElementById('btn-pdp-add-bag');
       if (btnAddBag) {
         btnAddBag.addEventListener('click', function() {
           const cartItemId = `${product.id}_${selectedSize}`;
-          const existing = (JSON.parse(localStorage.getItem('showoff_cart') || '[]')).find(i => i.cartItemId === cartItemId);
           let currentCart = JSON.parse(localStorage.getItem('showoff_cart') || '[]');
+          const existing = currentCart.find(i => i.cartItemId === cartItemId);
 
           if (existing) {
             existing.quantity += qty;
-            const idx = currentCart.findIndex(i => i.cartItemId === cartItemId);
-            currentCart[idx] = existing;
           } else {
             currentCart.push({
               cartItemId,
@@ -439,8 +441,24 @@
           localStorage.setItem('showoff_cart', JSON.stringify(currentCart));
           if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
             window.showoffAnalytics.trackAddToCart(product, qty, selectedSize);
+            window.showoffAnalytics.syncCartFromStorage();
           }
-          window.location.reload();
+
+          // Update header badges
+          const totalQty = currentCart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+          document.querySelectorAll('.cart-count-badge').forEach(b => b.textContent = totalQty);
+
+          // Show Toast notification
+          const toast = document.createElement('div');
+          toast.className = 'toast toast-success';
+          toast.innerHTML = `<span>🛍️ Added <strong>${product.title}</strong> (${selectedSize}, Qty: ${qty}) to Bag!</span>`;
+          const container = document.getElementById('toast-container') || document.body;
+          container.appendChild(toast);
+          setTimeout(() => toast.classList.add('is-visible'), 10);
+          setTimeout(() => {
+            toast.classList.remove('is-visible');
+            setTimeout(() => toast.remove(), 400);
+          }, 3000);
         });
       }
 
@@ -468,6 +486,7 @@
           localStorage.setItem('showoff_cart', JSON.stringify(currentCart));
           if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
             window.showoffAnalytics.trackAddToCart(product, qty, selectedSize);
+            window.showoffAnalytics.syncCartFromStorage();
           }
           window.location.href = 'cart.html';
         });
@@ -484,13 +503,20 @@
           let currentWl = JSON.parse(localStorage.getItem('showoff_wishlist') || '[]');
           const idx = currentWl.findIndex(i => i.id === product.id);
           if (idx > -1) {
-            currentWl.splice(idx, 1);
+            const removed = currentWl.splice(idx, 1)[0];
             pdpWlBtn.classList.remove('is-active');
+            if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromWishlist === 'function') {
+              window.showoffAnalytics.trackRemoveFromWishlist(removed || product);
+            }
           } else {
             currentWl.push(product);
             pdpWlBtn.classList.add('is-active');
+            if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToWishlist === 'function') {
+              window.showoffAnalytics.trackAddToWishlist(product);
+            }
           }
           localStorage.setItem('showoff_wishlist', JSON.stringify(currentWl));
+          document.querySelectorAll('.wishlist-count-badge').forEach(b => b.textContent = currentWl.length);
         });
       }
 

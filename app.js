@@ -623,6 +623,7 @@
     saveCart();
     if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
       window.showoffAnalytics.trackAddToCart(product, quantity, size);
+      window.showoffAnalytics.syncCartFromStorage();
     }
     showToast(`Added "${product.title}" (${size}) to Bag! 🛍️`, 'success');
     openCartDrawer();
@@ -634,14 +635,28 @@
 
     STATE.cart[itemIndex].quantity += delta;
     if (STATE.cart[itemIndex].quantity <= 0) {
+      const removedItem = STATE.cart[itemIndex];
       STATE.cart.splice(itemIndex, 1);
+      if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromCart === 'function') {
+        window.showoffAnalytics.trackRemoveFromCart(removedItem);
+      }
     }
     saveCart();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+      window.showoffAnalytics.syncCartFromStorage();
+    }
   }
 
   function removeCartItem(cartItemId) {
+    const removedItem = STATE.cart.find(i => i.cartItemId === cartItemId);
     STATE.cart = STATE.cart.filter(i => i.cartItemId !== cartItemId);
     saveCart();
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromCart === 'function' && removedItem) {
+      window.showoffAnalytics.trackRemoveFromCart(removedItem);
+    }
+    if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+      window.showoffAnalytics.syncCartFromStorage();
+    }
     showToast('Item removed from cart');
   }
 
@@ -700,10 +715,16 @@
   function toggleWishlist(product) {
     const idx = STATE.wishlist.findIndex(i => i.id === product.id);
     if (idx > -1) {
-      STATE.wishlist.splice(idx, 1);
+      const removed = STATE.wishlist.splice(idx, 1)[0];
+      if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromWishlist === 'function') {
+        window.showoffAnalytics.trackRemoveFromWishlist(removed || product);
+      }
       showToast('Removed from Wishlist');
     } else {
       STATE.wishlist.push(product);
+      if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToWishlist === 'function') {
+        window.showoffAnalytics.trackAddToWishlist(product);
+      }
       showToast(`Added "${product.title}" to Wishlist ❤️`, 'success');
     }
     saveWishlist();

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -224,7 +224,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: auto;">
                   <button type="button" class="btn-wl-page-move" data-id="${p.id}" style="flex:1; padding:8px; background:#034ba9; color:#fff; font-weight:800; font-size:12px; border-radius:6px;">Move to Bag</button>
-                  <button type="button" class="btn-wl-page-del" data-id="${p.id}" style="padding:8px; background:#f3f4f6; color:#e02424; font-weight:700; font-size:12px; border-radius:6px;">âœ•</button>
+                  <button type="button" class="btn-wl-page-del" data-id="${p.id}" style="padding:8px; background:#f3f4f6; color:#e02424; font-weight:700; font-size:12px; border-radius:6px;">✖</button>
                 </div>
               </div>
             </div>
@@ -247,14 +247,20 @@
                   image: item.images ? item.images[0] : '',
                   quantity: 1
                 });
-                  localStorage.setItem('showoff_cart', JSON.stringify(cart));
-                  if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
-                    window.showoffAnalytics.trackAddToCart(item, 1, 'M');
-                  }
+                localStorage.setItem('showoff_cart', JSON.stringify(cart));
+                if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
+                  window.showoffAnalytics.trackAddToCart(item, 1, 'M');
+                }
+                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+                  window.showoffAnalytics.syncCartFromStorage();
+                }
                 wl = wl.filter(i => i.id !== id);
                 localStorage.setItem('showoff_wishlist', JSON.stringify(wl));
+                if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromWishlist === 'function') {
+                  window.showoffAnalytics.trackRemoveFromWishlist(item);
+                }
                 renderWishlist();
-                alert('Moved item to Bag! ðŸ›ï¸');
+                alert('Moved item to Bag! 🛍️');
               }
             });
           });
@@ -262,8 +268,12 @@
           grid.querySelectorAll('.btn-wl-page-del').forEach(btn => {
             btn.addEventListener('click', function() {
               const id = btn.getAttribute('data-id');
+              const item = wl.find(i => i.id === id);
               wl = wl.filter(i => i.id !== id);
               localStorage.setItem('showoff_wishlist', JSON.stringify(wl));
+              if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromWishlist === 'function' && item) {
+                window.showoffAnalytics.trackRemoveFromWishlist(item);
+              }
               renderWishlist();
             });
           });

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -203,6 +203,9 @@
       e.preventDefault();
       const val = document.getElementById('track-input').value.trim();
       if (val) {
+        if (window.showoffAnalytics && typeof window.showoffAnalytics.trackOrderSearch === 'function') {
+          window.showoffAnalytics.trackOrderSearch(val);
+        }
         document.getElementById('res-order-id').textContent = val.startsWith('#') ? val : `#SHO-${val.slice(-5)}`;
         document.getElementById('track-result-card').style.display = 'block';
       }

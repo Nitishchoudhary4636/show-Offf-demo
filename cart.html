@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -327,8 +327,16 @@
               const item = cart.find(i => i.cartItemId === id);
               if (item) {
                 item.quantity--;
-                if (item.quantity <= 0) cart = cart.filter(i => i.cartItemId !== id);
+                if (item.quantity <= 0) {
+                  cart = cart.filter(i => i.cartItemId !== id);
+                  if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromCart === 'function') {
+                    window.showoffAnalytics.trackRemoveFromCart(item);
+                  }
+                }
                 localStorage.setItem('showoff_cart', JSON.stringify(cart));
+                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+                  window.showoffAnalytics.syncCartFromStorage();
+                }
                 renderCart();
               }
             });
@@ -341,6 +349,9 @@
               if (item) {
                 item.quantity++;
                 localStorage.setItem('showoff_cart', JSON.stringify(cart));
+                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+                  window.showoffAnalytics.syncCartFromStorage();
+                }
                 renderCart();
               }
             });
@@ -349,21 +360,28 @@
           itemsListEl.querySelectorAll('.btn-remove').forEach(btn => {
             btn.addEventListener('click', function() {
               const id = btn.getAttribute('data-id');
+              const removedItem = cart.find(i => i.cartItemId === id);
               cart = cart.filter(i => i.cartItemId !== id);
               localStorage.setItem('showoff_cart', JSON.stringify(cart));
+              if (window.showoffAnalytics && typeof window.showoffAnalytics.trackRemoveFromCart === 'function' && removedItem) {
+                window.showoffAnalytics.trackRemoveFromCart(removedItem);
+              }
+              if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+                window.showoffAnalytics.syncCartFromStorage();
+              }
               renderCart();
             });
           });
         }
 
-        if (subtotalEl) subtotalEl.textContent = `â‚¹${subtotal.toLocaleString('en-IN')}.00`;
+        if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toLocaleString('en-IN')}.00`;
         if (discount > 0 && discountRow && discountVal) {
           discountRow.style.display = 'flex';
-          discountVal.textContent = `-â‚¹${Math.round(discount).toLocaleString('en-IN')}.00 (${appliedCoupon})`;
+          discountVal.textContent = `-₹${Math.round(discount).toLocaleString('en-IN')}.00 (${appliedCoupon})`;
         } else if (discountRow) {
           discountRow.style.display = 'none';
         }
-        if (totalEl) totalEl.textContent = `â‚¹${finalTotal.toLocaleString('en-IN')}.00`;
+        if (totalEl) totalEl.textContent = `₹${finalTotal.toLocaleString('en-IN')}.00`;
       }
 
       renderCart();
@@ -391,10 +409,10 @@
 
       if (btnPlaceOrder && modal) {
         btnPlaceOrder.addEventListener('click', function() {
-          const name = document.getElementById('cust-name').value;
-          const phone = document.getElementById('cust-phone').value;
-          const addr = document.getElementById('cust-address').value;
-          const pin = document.getElementById('cust-pin').value;
+          const name = (document.getElementById('cust-name') || {}).value || '';
+          const phone = (document.getElementById('cust-phone') || {}).value || '';
+          const addr = (document.getElementById('cust-address') || {}).value || '';
+          const pin = (document.getElementById('cust-pin') || {}).value || '';
 
           if (!name || !phone || !addr || !pin) {
             alert('Please fill out all required delivery address fields.');
@@ -402,10 +420,28 @@
           }
 
           const randomId = Math.floor(10000 + Math.random() * 90000);
-          if (orderIdEl) orderIdEl.textContent = `#SHO-${randomId}`;
+          const orderId = `#SHO-${randomId}`;
+          if (orderIdEl) orderIdEl.textContent = orderId;
+
+          const purchasedCart = [...cart];
+          const orderDetails = {
+            name: name,
+            phone: phone,
+            address: addr,
+            pincode: pin,
+            coupon: appliedCoupon
+          };
+
+          if (window.showoffAnalytics && typeof window.showoffAnalytics.trackPurchase === 'function') {
+            window.showoffAnalytics.trackPurchase(orderId, orderDetails, purchasedCart);
+          }
 
           // Clear Cart
           localStorage.removeItem('showoff_cart');
+          cart = [];
+          if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
+            window.showoffAnalytics.syncCartFromStorage();
+          }
           modal.style.display = 'flex';
         });
       }

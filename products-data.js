@@ -621,6 +621,10 @@ const PRODUCTS_DATA = {
 // Aliases for compatibility
 PRODUCTS_DATA.shopAllWomen = PRODUCTS_DATA.womenProducts;
 
+if (typeof window !== 'undefined') {
+  window.PRODUCTS_DATA = PRODUCTS_DATA;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = PRODUCTS_DATA;
 }
