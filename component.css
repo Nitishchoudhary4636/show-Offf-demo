@@ -1047,3 +1047,439 @@
     transform: translateY(0);
   }
 }
+
+/* ==========================================================================
+   8. KWIKPASS LOGIN MODAL & USER SESSION STYLES
+   ========================================================================== */
+.kwikpass-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 16px;
+}
+
+.kwikpass-modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.kwikpass-modal-card {
+  background: #034ba9;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  transform: scale(0.92);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
+}
+
+.kwikpass-modal-overlay.is-open .kwikpass-modal-card {
+  transform: scale(1);
+}
+
+.kwikpass-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+  z-index: 20;
+}
+
+.kwikpass-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+
+/* Left Brand Panel */
+.kwikpass-left-panel {
+  flex: 1.15;
+  padding: 38px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  background: #034ba9;
+}
+
+.kwikpass-header-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.kwikpass-brand-title {
+  font-family: 'Plus Jakarta Sans', serif;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+.kwikpass-powered-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.5px;
+}
+
+.kwikpass-powered-badge .kp-bolt {
+  color: #fbbf24;
+  font-size: 14px;
+}
+
+.kwikpass-headline {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #ffffff;
+}
+
+.kwikpass-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.kwikpass-feature-card {
+  background: rgba(0, 35, 90, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 16px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.kwikpass-feature-icon {
+  font-size: 22px;
+  margin-bottom: 2px;
+}
+
+.kwikpass-feature-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.kwikpass-feature-desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Right Form Card */
+.kwikpass-right-card {
+  flex: 0.92;
+  background: #ffffff;
+  margin: 18px 18px 18px 0;
+  border-radius: 14px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #111827;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.kwikpass-form-step {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.kwikpass-input-group {
+  display: flex;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 48px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kwikpass-input-group:focus-within {
+  border-color: #034ba9;
+  box-shadow: 0 0 0 3px rgba(3, 75, 169, 0.15);
+}
+
+.kwikpass-country-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  user-select: none;
+}
+
+.kwikpass-mobile-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.kwikpass-mobile-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.kwikpass-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #4b5563;
+  cursor: pointer;
+  user-select: none;
+}
+
+.kwikpass-checkbox-row input {
+  accent-color: #034ba9;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.kwikpass-submit-btn {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  height: 46px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.kwikpass-submit-btn:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+.kwikpass-submit-btn:active {
+  transform: translateY(0);
+}
+
+.kwikpass-disclaimer {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.kwikpass-disclaimer a {
+  color: #374151;
+  text-decoration: underline;
+}
+
+/* OTP Step */
+.kwikpass-otp-header {
+  text-align: center;
+}
+
+.kwikpass-otp-header h4 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.kwikpass-otp-header p {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.kwikpass-otp-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.kwikpass-otp-digit {
+  width: 46px;
+  height: 48px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  color: #034ba9;
+  transition: border-color 0.2s ease;
+}
+
+.kwikpass-otp-digit:focus {
+  border-color: #034ba9;
+  box-shadow: 0 0 0 3px rgba(3, 75, 169, 0.15);
+}
+
+/* User Account Dropdown Menu in Header */
+.user-account-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.user-account-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  width: 230px;
+  padding: 8px 0;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.user-account-dropdown.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-dropdown-header {
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.user-dropdown-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: #111827;
+}
+
+.user-dropdown-phone {
+  font-size: 12px;
+  color: #034ba9;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background: #f9fafb;
+  color: #034ba9;
+}
+
+.user-dropdown-item.is-logout {
+  color: #dc2626;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.user-dropdown-item.is-logout:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Logged in avatar in header */
+.user-btn.is-logged-in {
+  background: rgba(3, 75, 169, 0.08);
+  color: #034ba9;
+  border: 1.5px solid #034ba9;
+  border-radius: 50%;
+  position: relative;
+}
+
+.user-avatar-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #034ba9;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Modal for Mobile */
+@media (max-width: 768px) {
+  .kwikpass-modal-card {
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .kwikpass-left-panel {
+    padding: 24px 20px 16px;
+  }
+  .kwikpass-headline {
+    font-size: 20px;
+  }
+  .kwikpass-features-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .kwikpass-right-card {
+    margin: 0 16px 16px;
+    padding: 24px 18px;
+  }
+}

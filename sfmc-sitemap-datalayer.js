@@ -189,6 +189,31 @@
     });
   }
 
+  function getUserFromStorage() {
+    try {
+      var raw = localStorage.getItem("showoff_user");
+      if (raw) {
+        var u = JSON.parse(raw);
+        if (u && u.isLoggedIn) {
+          return {
+            id: u.phone,
+            attributes: {
+              phone: u.phone,
+              name: u.name,
+              isLoggedIn: true
+            }
+          };
+        }
+      }
+    } catch (e) {}
+    return {
+      id: "anonymous",
+      attributes: {
+        isLoggedIn: false
+      }
+    };
+  }
+
   // =========================================================================
   // BASE MCP STATE BUILDER
   // =========================================================================
@@ -204,7 +229,8 @@
       currency: "INR",
       items: cart.map(toMcpItemFromCartItem),
       pageName: detectedPageType,
-      pageType: detectedPageType
+      pageType: detectedPageType,
+      user: getUserFromStorage()
     };
 
     if (detectedPageType === "Home") {
@@ -601,6 +627,30 @@
     });
   }
 
+  function trackUserLogin(user) {
+    var phone = (user && user.phone) || "";
+    pushMcpState("login", {
+      user: {
+        id: phone,
+        attributes: {
+          phone: phone,
+          isLoggedIn: true
+        }
+      }
+    });
+  }
+
+  function trackUserLogout() {
+    pushMcpState("logout", {
+      user: {
+        id: "anonymous",
+        attributes: {
+          isLoggedIn: false
+        }
+      }
+    });
+  }
+
   // =========================================================================
   // PUBLIC API EXPOSURE
   // =========================================================================
@@ -618,6 +668,8 @@
     trackPurchase: trackPurchase,
     trackContactSubmit: trackContactSubmit,
     trackOrderSearch: trackOrderSearch,
+    trackUserLogin: trackUserLogin,
+    trackUserLogout: trackUserLogout,
     getDataLayerValue: getDataLayerValue,
     waitForDataLayerValue: waitForDataLayerValue,
     getProductById: getProductById,

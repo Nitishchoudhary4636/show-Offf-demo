@@ -1198,6 +1198,386 @@
   }
 
   // =========================================================================
+  // 15. KWIKPASS LOGIN MODAL & USER SESSION MANAGEMENT
+  // =========================================================================
+
+  function getUserSession() {
+    try {
+      const localUser = localStorage.getItem('showoff_user');
+      const sessionActive = sessionStorage.getItem('showoff_session_active');
+      if (localUser && sessionActive === 'true') {
+        return JSON.parse(localUser);
+      }
+      if (localUser) {
+        sessionStorage.setItem('showoff_session_active', 'true');
+        return JSON.parse(localUser);
+      }
+    } catch (e) {
+      console.error('Error reading user session:', e);
+    }
+    return null;
+  }
+
+  function renderKwikpassModalDom() {
+    if (document.getElementById('kwikpass-modal-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'kwikpass-modal-overlay';
+    overlay.className = 'kwikpass-modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+
+    overlay.innerHTML = `
+      <div class="kwikpass-modal-card">
+        <button type="button" class="kwikpass-close-btn" id="kwikpass-close-btn" aria-label="Close modal">✕</button>
+        
+        <!-- Left Brand Panel -->
+        <div class="kwikpass-left-panel">
+          <div class="kwikpass-header-brand">
+            <span class="kwikpass-brand-title">SHOWOFFFF</span>
+            <span class="kwikpass-powered-badge">Powered by <strong style="color:#ffffff;">Kwik</strong><span class="kp-bolt">⚡</span><strong style="color:#ffffff;">Pass</strong></span>
+          </div>
+          
+          <h2 class="kwikpass-headline">Get FLAT 10% OFF on your first order.</h2>
+          
+          <div class="kwikpass-features-grid">
+            <div class="kwikpass-feature-card">
+              <span class="kwikpass-feature-icon">🌟</span>
+              <span class="kwikpass-feature-title">Customer-first</span>
+              <span class="kwikpass-feature-desc">Putting you in the center</span>
+            </div>
+            <div class="kwikpass-feature-card">
+              <span class="kwikpass-feature-icon">🌟</span>
+              <span class="kwikpass-feature-title">Transparent</span>
+              <span class="kwikpass-feature-desc">Honest from the inside out</span>
+            </div>
+            <div class="kwikpass-feature-card">
+              <span class="kwikpass-feature-icon">🌟</span>
+              <span class="kwikpass-feature-title">Innovative</span>
+              <span class="kwikpass-feature-desc">Getting the absolute best for you</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Form Card -->
+        <div class="kwikpass-right-card">
+          <!-- Step 1: Mobile Phone -->
+          <div id="kp-step-phone" class="kwikpass-form-step">
+            <div class="kwikpass-input-group">
+              <div class="kwikpass-country-code">
+                <span>🇮🇳</span>
+                <span>+91</span>
+              </div>
+              <input type="tel" id="kp-mobile-input" class="kwikpass-mobile-input" placeholder="Enter Mobile Number" maxlength="10" inputmode="numeric" />
+            </div>
+            
+            <label class="kwikpass-checkbox-row">
+              <input type="checkbox" id="kp-notify-checkbox" checked />
+              <span>Notify me with offers &amp; updates</span>
+            </label>
+            
+            <button type="button" id="kp-btn-submit" class="kwikpass-submit-btn">Submit</button>
+            
+            <p class="kwikpass-disclaimer">
+              I accept that I have read &amp; understood your <a href="shipping-policy.html">Privacy Policy</a> and <a href="shipping-policy.html">T&amp;Cs</a>.
+            </p>
+          </div>
+          
+          <!-- Step 2: OTP Verification -->
+          <div id="kp-step-otp" class="kwikpass-form-step" style="display: none;">
+            <div class="kwikpass-otp-header">
+              <h4>Enter Verification Code</h4>
+              <p id="kp-otp-subtext">OTP sent to +91 </p>
+            </div>
+            
+            <div class="kwikpass-otp-inputs">
+              <input type="text" maxlength="1" class="kwikpass-otp-digit" value="1" />
+              <input type="text" maxlength="1" class="kwikpass-otp-digit" value="2" />
+              <input type="text" maxlength="1" class="kwikpass-otp-digit" value="3" />
+              <input type="text" maxlength="1" class="kwikpass-otp-digit" value="4" />
+            </div>
+            
+            <button type="button" id="kp-btn-verify-otp" class="kwikpass-submit-btn">Verify &amp; Login</button>
+            
+            <button type="button" id="kp-btn-back-phone" style="background:none; border:none; color:#034ba9; font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline;">Change Mobile Number</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Event listeners inside modal
+    const closeBtn = overlay.querySelector('#kwikpass-close-btn');
+    const submitBtn = overlay.querySelector('#kp-btn-submit');
+    const verifyBtn = overlay.querySelector('#kp-btn-verify-otp');
+    const backBtn = overlay.querySelector('#kp-btn-back-phone');
+    const phoneInput = overlay.querySelector('#kp-mobile-input');
+
+    if (closeBtn) closeBtn.addEventListener('click', closeKwikpassModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeKwikpassModal();
+    });
+
+    if (phoneInput) {
+      phoneInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handlePhoneSubmit();
+      });
+    }
+
+    if (submitBtn) submitBtn.addEventListener('click', handlePhoneSubmit);
+    if (verifyBtn) verifyBtn.addEventListener('click', handleOtpVerify);
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        document.getElementById('kp-step-otp').style.display = 'none';
+        document.getElementById('kp-step-phone').style.display = 'flex';
+        document.getElementById('kp-mobile-input').focus();
+      });
+    }
+
+    // Auto-advance OTP digits
+    const digits = overlay.querySelectorAll('.kwikpass-otp-digit');
+    digits.forEach((d, idx) => {
+      d.addEventListener('input', () => {
+        if (d.value.length === 1 && idx < digits.length - 1) {
+          digits[idx + 1].focus();
+        }
+      });
+      d.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && d.value === '' && idx > 0) {
+          digits[idx - 1].focus();
+        } else if (e.key === 'Enter') {
+          handleOtpVerify();
+        }
+      });
+    });
+  }
+
+  let tempLoginPhone = '';
+
+  function handlePhoneSubmit() {
+    const input = document.getElementById('kp-mobile-input');
+    if (!input) return;
+    const val = input.value.trim().replace(/[^0-9]/g, '');
+
+    if (val.length < 10) {
+      showToast('Please enter a valid 10-digit mobile number');
+      input.focus();
+      return;
+    }
+
+    tempLoginPhone = val;
+    const subtext = document.getElementById('kp-otp-subtext');
+    if (subtext) subtext.textContent = `OTP sent to +91 ${val.slice(0, 5)} ${val.slice(5)}`;
+
+    document.getElementById('kp-step-phone').style.display = 'none';
+    document.getElementById('kp-step-otp').style.display = 'flex';
+
+    const firstDigit = document.querySelector('.kwikpass-otp-digit');
+    if (firstDigit) firstDigit.focus();
+  }
+
+  function handleOtpVerify() {
+    const phone = tempLoginPhone || '9876543210';
+    const user = {
+      phone: `+91 ${phone}`,
+      phoneRaw: phone,
+      name: `Customer (${phone.slice(-4)})`,
+      isLoggedIn: true,
+      loggedInAt: new Date().toISOString()
+    };
+
+    localStorage.setItem('showoff_user', JSON.stringify(user));
+    sessionStorage.setItem('showoff_session_active', 'true');
+
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        event: 'login',
+        user: {
+          phone: user.phone,
+          isLoggedIn: true
+        },
+        MCP: {
+          user: {
+            id: user.phone,
+            attributes: {
+              phone: user.phone,
+              isLoggedIn: true
+            }
+          }
+        }
+      });
+    }
+
+    closeKwikpassModal();
+    updateUserSessionUI();
+    showToast(`Welcome! Logged in as +91 ${phone} 🎉`);
+  }
+
+  function openKwikpassModal() {
+    renderKwikpassModalDom();
+    const overlay = document.getElementById('kwikpass-modal-overlay');
+    if (!overlay) return;
+
+    // Reset view to Step 1
+    const stepPhone = document.getElementById('kp-step-phone');
+    const stepOtp = document.getElementById('kp-step-otp');
+    if (stepPhone) stepPhone.style.display = 'flex';
+    if (stepOtp) stepOtp.style.display = 'none';
+
+    const phoneInput = document.getElementById('kp-mobile-input');
+    if (phoneInput) {
+      phoneInput.value = '';
+      setTimeout(() => phoneInput.focus(), 100);
+    }
+
+    overlay.classList.add('is-open');
+  }
+
+  function closeKwikpassModal() {
+    const overlay = document.getElementById('kwikpass-modal-overlay');
+    if (overlay) overlay.classList.remove('is-open');
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('showoff_user');
+    sessionStorage.removeItem('showoff_session_active');
+
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        event: 'logout',
+        user: {
+          isLoggedIn: false
+        },
+        MCP: {
+          user: {
+            id: 'anonymous',
+            attributes: {
+              isLoggedIn: false
+            }
+          }
+        }
+      });
+    }
+
+    updateUserSessionUI();
+    showToast('Logged out successfully.');
+  }
+
+  function updateUserSessionUI() {
+    const user = getUserSession();
+    const accountBtns = document.querySelectorAll('#btn-account, .user-btn');
+
+    accountBtns.forEach(btn => {
+      // Don't modify the search button which might also have user-btn class
+      if (btn.classList.contains('search-open-trigger')) return;
+
+      let parentWrap = btn.parentElement;
+      if (!parentWrap || !parentWrap.classList.contains('user-account-wrapper')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'user-account-wrapper';
+        if (btn.parentNode) {
+          btn.parentNode.insertBefore(wrap, btn);
+          wrap.appendChild(btn);
+          parentWrap = wrap;
+        }
+      }
+
+      // Existing dropdown check
+      let dropdown = parentWrap ? parentWrap.querySelector('.user-account-dropdown') : null;
+
+      if (user && user.isLoggedIn) {
+        btn.classList.add('is-logged-in');
+        btn.setAttribute('aria-label', `Account: ${user.phone}`);
+        btn.innerHTML = `
+          <div class="user-avatar-badge" title="${user.phone}">
+            ${user.phone.slice(-2)}
+          </div>
+        `;
+
+        if (!dropdown && parentWrap) {
+          dropdown = document.createElement('div');
+          dropdown.className = 'user-account-dropdown';
+          parentWrap.appendChild(dropdown);
+        }
+
+        if (dropdown) {
+          dropdown.innerHTML = `
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-name">👋 Hi, ${user.name}</div>
+              <div class="user-dropdown-phone">${user.phone}</div>
+            </div>
+            <a href="track-order.html" class="user-dropdown-item">
+              <span>📦</span> Track My Orders
+            </a>
+            <a href="wishlist.html" class="user-dropdown-item">
+              <span>❤️</span> My Wishlist
+            </a>
+            <a href="cart.html" class="user-dropdown-item">
+              <span>🛍️</span> My Bag
+            </a>
+            <div class="user-dropdown-item is-logout" id="btn-dropdown-logout">
+              <span>🚪</span> Logout
+            </div>
+          `;
+
+          const logoutBtn = dropdown.querySelector('#btn-dropdown-logout');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              dropdown.classList.remove('is-open');
+              logoutUser();
+            });
+          }
+        }
+
+      } else {
+        btn.classList.remove('is-logged-in');
+        btn.setAttribute('aria-label', 'Login or Sign Up');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        `;
+        if (dropdown) dropdown.remove();
+      }
+    });
+  }
+
+  function initUserSession() {
+    renderKwikpassModalDom();
+    updateUserSessionUI();
+
+    // Toggle dropdown on click when logged in, or open modal when logged out
+    document.addEventListener('click', (e) => {
+      const accountBtn = e.target.closest('#btn-account, .user-btn:not(.search-open-trigger)');
+      const user = getUserSession();
+
+      if (accountBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (user && user.isLoggedIn) {
+          const wrap = accountBtn.closest('.user-account-wrapper');
+          const dropdown = wrap ? wrap.querySelector('.user-account-dropdown') : null;
+          if (dropdown) {
+            dropdown.classList.toggle('is-open');
+          }
+        } else {
+          openKwikpassModal();
+        }
+        return;
+      }
+
+      // Close dropdown when clicking outside
+      if (!e.target.closest('.user-account-wrapper')) {
+        document.querySelectorAll('.user-account-dropdown.is-open').forEach(d => d.classList.remove('is-open'));
+      }
+    });
+  }
+
+  // =========================================================================
   // INITIALIZATION
   // =========================================================================
   function init() {
@@ -1206,6 +1586,7 @@
     renderHomepageSections();
     updateCartUI();
     updateWishlistUI();
+    initUserSession();
     initEventListeners();
   }
 
@@ -1214,5 +1595,13 @@
   } else {
     init();
   }
+
+  // Expose global methods for external triggers
+  window.showoffAuth = {
+    openLoginModal: openKwikpassModal,
+    closeLoginModal: closeKwikpassModal,
+    logout: logoutUser,
+    getUser: getUserSession
+  };
 
 })();
