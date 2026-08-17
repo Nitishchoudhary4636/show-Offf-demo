@@ -440,9 +440,6 @@
           if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
             window.showoffAnalytics.trackAddToCart(product, qty, selectedSize);
           }
-          if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-            window.showoffAnalytics.syncCartFromStorage();
-          }
           window.location.reload();
         });
       }
@@ -471,9 +468,6 @@
           localStorage.setItem('showoff_cart', JSON.stringify(currentCart));
           if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
             window.showoffAnalytics.trackAddToCart(product, qty, selectedSize);
-          }
-          if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-            window.showoffAnalytics.syncCartFromStorage();
           }
           window.location.href = 'cart.html';
         });

@@ -251,9 +251,6 @@
                   if (window.showoffAnalytics && typeof window.showoffAnalytics.trackAddToCart === 'function') {
                     window.showoffAnalytics.trackAddToCart(item, 1, 'M');
                   }
-                  if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-                    window.showoffAnalytics.syncCartFromStorage();
-                  }
                 wl = wl.filter(i => i.id !== id);
                 localStorage.setItem('showoff_wishlist', JSON.stringify(wl));
                 renderWishlist();
@@ -267,9 +264,6 @@
               const id = btn.getAttribute('data-id');
               wl = wl.filter(i => i.id !== id);
               localStorage.setItem('showoff_wishlist', JSON.stringify(wl));
-                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-                  window.showoffAnalytics.syncCartFromStorage();
-                }
               renderWishlist();
             });
           });

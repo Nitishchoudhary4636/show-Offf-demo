@@ -329,9 +329,6 @@
                 item.quantity--;
                 if (item.quantity <= 0) cart = cart.filter(i => i.cartItemId !== id);
                 localStorage.setItem('showoff_cart', JSON.stringify(cart));
-                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-                  window.showoffAnalytics.syncCartFromStorage();
-                }
                 renderCart();
               }
             });
@@ -344,9 +341,6 @@
               if (item) {
                 item.quantity++;
                 localStorage.setItem('showoff_cart', JSON.stringify(cart));
-                if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-                  window.showoffAnalytics.syncCartFromStorage();
-                }
                 renderCart();
               }
             });
@@ -357,9 +351,6 @@
               const id = btn.getAttribute('data-id');
               cart = cart.filter(i => i.cartItemId !== id);
               localStorage.setItem('showoff_cart', JSON.stringify(cart));
-              if (window.showoffAnalytics && typeof window.showoffAnalytics.syncCartFromStorage === 'function') {
-                window.showoffAnalytics.syncCartFromStorage();
-              }
               renderCart();
             });
           });
