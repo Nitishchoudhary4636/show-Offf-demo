@@ -293,7 +293,8 @@
 //             }
 //           },
 //           contentZones: [
-//             { name: "pdp_similar_recommendations", selector: "#pdp-similar-grid" }
+//             { name: "pdp_similar_recommendations", selector: "#pdp-similar-grid" },
+//             { name: "pdp_personalized_recommendations", selector: "#pdp-personalized-recommendations" }
 //           ],
 //           listeners: [
 //             SalesforceInteractions.listener("click", "#btn-pdp-add-bag", function () {
